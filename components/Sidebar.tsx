@@ -15,10 +15,10 @@ import {
 import { auth } from '@/lib/auth';
 
 const navigation = [
-  { name: 'Dashboard', href: '/app/dashboard', icon: LayoutDashboard, disabled: true },
+  { name: 'Dashboard', href: '/app/dashboard', icon: LayoutDashboard, disabled: false },
   { name: 'Mi Tablero', href: '/app/tablero', icon: KanbanSquare, disabled: false },
   { name: 'Clientes', href: '/app/clientes', icon: Users, disabled: true },
-  { name: 'Agenda', href: '/app/agenda', icon: Calendar, disabled: true },
+  { name: 'Agenda', href: '/app/agenda', icon: Calendar, disabled: false },
   { name: 'Reportes', href: '/app/reportes', icon: BarChart3, disabled: true },
   { name: 'Configuración', href: '/app/configuracion', icon: Settings, disabled: true },
 ];

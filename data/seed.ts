@@ -1,36 +1,18 @@
-export type Potential = 'A' | 'B' | 'C';
+import { Client, ActionItem } from '@/types';
+import { daysAgoISO, todayISO, formatDateLabel, daysFromNowISO } from '@/lib/date';
 
-export type Stage =
-  | 'prospectos'
-  | 'contactados'
-  | 'visita-agendada'
-  | 'visitado'
-  | 'cotizacion-enviada'
-  | 'cerrado'
-  | 'seguimiento';
-
-export interface Client {
-  id: string;
-  name: string;
-  stage: Stage;
-  potential: Potential;
-  lastActivity: string;
-  nextAction: string;
-  contacto?: string;
-  email?: string;
-  telefono?: string;
-  empresa?: string;
-}
-
-export const STAGES = [
-  { id: 'prospectos' as Stage, label: 'Prospectos', color: 'bg-gray-500' },
-  { id: 'contactados' as Stage, label: 'Contactados', color: 'bg-blue-500' },
-  { id: 'visita-agendada' as Stage, label: 'Visita agendada', color: 'bg-purple-500' },
-  { id: 'visitado' as Stage, label: 'Visitado', color: 'bg-yellow-500' },
-  { id: 'cotizacion-enviada' as Stage, label: 'Cotización enviada', color: 'bg-orange-500' },
-  { id: 'cerrado' as Stage, label: 'Cerrado', color: 'bg-green-500' },
-  { id: 'seguimiento' as Stage, label: 'Seguimiento', color: 'bg-teal-500' },
-];
+// Generate dates for seed data
+const today = todayISO();
+const yesterday = daysAgoISO(1);
+const twoDaysAgo = daysAgoISO(2);
+const threeDaysAgo = daysAgoISO(3);
+const fourDaysAgo = daysAgoISO(4);
+const fiveDaysAgo = daysAgoISO(5);
+const thirtyDaysAgo = daysAgoISO(30);
+const fortyDaysAgo = daysAgoISO(40);
+const fiftyDaysAgo = daysAgoISO(50);
+const tomorrow = daysFromNowISO(1);
+const twoDaysFromNow = daysFromNowISO(2);
 
 export const clients: Client[] = [
   // Prospectos
@@ -39,7 +21,8 @@ export const clients: Client[] = [
     name: 'Construcciones Medina S.A.',
     stage: 'prospectos',
     potential: 'A',
-    lastActivity: 'Hoy',
+    lastActivityDate: today,
+    lastActivityLabel: formatDateLabel(today),
     nextAction: 'Enviar email de presentación',
     contacto: 'Carlos Medina',
     email: 'carlos.medina@cmedina.cl',
@@ -51,7 +34,8 @@ export const clients: Client[] = [
     name: 'Distribuidora El Roble',
     stage: 'prospectos',
     potential: 'B',
-    lastActivity: 'Ayer',
+    lastActivityDate: yesterday,
+    lastActivityLabel: formatDateLabel(yesterday),
     nextAction: 'Investigar necesidades',
     contacto: 'Patricia González',
     email: 'pgonzalez@elroble.cl',
@@ -63,7 +47,8 @@ export const clients: Client[] = [
     name: 'Transportes Valparaíso',
     stage: 'prospectos',
     potential: 'C',
-    lastActivity: '2 ene',
+    lastActivityDate: twoDaysAgo,
+    lastActivityLabel: formatDateLabel(twoDaysAgo),
     nextAction: 'Llamar para conocer interés',
     contacto: 'Roberto Silva',
     email: 'rsilva@transvalpo.cl',
@@ -75,7 +60,8 @@ export const clients: Client[] = [
     name: 'Inversiones Cordillera',
     stage: 'prospectos',
     potential: 'A',
-    lastActivity: '30 dic',
+    lastActivityDate: fourDaysAgo,
+    lastActivityLabel: formatDateLabel(fourDaysAgo),
     nextAction: 'Agendar llamada inicial',
     contacto: 'Ana María Torres',
     email: 'atorres@cordillera.cl',
@@ -89,7 +75,8 @@ export const clients: Client[] = [
     name: 'Supermercado La Estrella',
     stage: 'contactados',
     potential: 'A',
-    lastActivity: 'Hoy',
+    lastActivityDate: today,
+    lastActivityLabel: formatDateLabel(today),
     nextAction: 'Enviar propuesta inicial',
     contacto: 'Miguel Ángel Ramírez',
     email: 'mramirez@laestrella.cl',
@@ -101,7 +88,8 @@ export const clients: Client[] = [
     name: 'Laboratorios Bío Bío',
     stage: 'contactados',
     potential: 'B',
-    lastActivity: 'Ayer',
+    lastActivityDate: yesterday,
+    lastActivityLabel: formatDateLabel(yesterday),
     nextAction: 'Confirmar interés en reunión',
     contacto: 'Daniela Muñoz',
     email: 'dmunoz@labbiobio.cl',
@@ -113,7 +101,8 @@ export const clients: Client[] = [
     name: 'Hotel Mar del Plata',
     stage: 'contactados',
     potential: 'B',
-    lastActivity: '3 ene',
+    lastActivityDate: threeDaysAgo,
+    lastActivityLabel: formatDateLabel(threeDaysAgo),
     nextAction: 'Seguimiento por correo',
     contacto: 'Fernando Campos',
     email: 'fcampos@hotelmardelplata.cl',
@@ -127,7 +116,8 @@ export const clients: Client[] = [
     name: 'Agrícola San José',
     stage: 'visita-agendada',
     potential: 'A',
-    lastActivity: 'Hoy',
+    lastActivityDate: today,
+    lastActivityLabel: formatDateLabel(today),
     nextAction: 'Visita agendada para mañana 10:00',
     contacto: 'José Luis Vargas',
     email: 'jvargas@agricolasj.cl',
@@ -139,7 +129,8 @@ export const clients: Client[] = [
     name: 'Textiles Araucanía',
     stage: 'visita-agendada',
     potential: 'B',
-    lastActivity: 'Ayer',
+    lastActivityDate: yesterday,
+    lastActivityLabel: formatDateLabel(yesterday),
     nextAction: 'Reunión programada 5 enero 15:00',
     contacto: 'Carolina Fuentes',
     email: 'cfuentes@textaraucania.cl',
@@ -151,7 +142,8 @@ export const clients: Client[] = [
     name: 'Automotriz Central',
     stage: 'visita-agendada',
     potential: 'A',
-    lastActivity: '2 ene',
+    lastActivityDate: twoDaysAgo,
+    lastActivityLabel: formatDateLabel(twoDaysAgo),
     nextAction: 'Visita en terreno 6 enero',
     contacto: 'Ricardo Hernández',
     email: 'rhernandez@autocentral.cl',
@@ -165,7 +157,8 @@ export const clients: Client[] = [
     name: 'Farmacia Santa Cruz',
     stage: 'visitado',
     potential: 'B',
-    lastActivity: 'Hoy',
+    lastActivityDate: today,
+    lastActivityLabel: formatDateLabel(today),
     nextAction: 'Preparar cotización personalizada',
     contacto: 'Marcela Reyes',
     email: 'mreyes@farmasantacruz.cl',
@@ -177,7 +170,8 @@ export const clients: Client[] = [
     name: 'Servicios Tecnológicos LTDA',
     stage: 'visitado',
     potential: 'A',
-    lastActivity: 'Ayer',
+    lastActivityDate: yesterday,
+    lastActivityLabel: formatDateLabel(yesterday),
     nextAction: 'Enviar especificaciones técnicas',
     contacto: 'Andrés Sepúlveda',
     email: 'asepulveda@servitec.cl',
@@ -189,7 +183,8 @@ export const clients: Client[] = [
     name: 'Café y Pastelería Luna',
     stage: 'visitado',
     potential: 'C',
-    lastActivity: '31 dic',
+    lastActivityDate: fiveDaysAgo,
+    lastActivityLabel: formatDateLabel(fiveDaysAgo),
     nextAction: 'Consultar sobre presupuesto',
     contacto: 'Mónica Contreras',
     email: 'mcontreras@cafeluna.cl',
@@ -201,7 +196,8 @@ export const clients: Client[] = [
     name: 'Metalúrgica del Sur',
     stage: 'visitado',
     potential: 'A',
-    lastActivity: '29 dic',
+    lastActivityDate: thirtyDaysAgo,
+    lastActivityLabel: formatDateLabel(thirtyDaysAgo),
     nextAction: 'Definir alcance del proyecto',
     contacto: 'Eduardo Morales',
     email: 'emorales@metalsur.cl',
@@ -215,7 +211,8 @@ export const clients: Client[] = [
     name: 'Clínica Dental Sonrisa',
     stage: 'cotizacion-enviada',
     potential: 'B',
-    lastActivity: 'Hoy',
+    lastActivityDate: today,
+    lastActivityLabel: formatDateLabel(today),
     nextAction: 'Llamar para confirmar recepción',
     contacto: 'Dra. Claudia Pizarro',
     email: 'cpizarro@clinicasonrisa.cl',
@@ -227,7 +224,8 @@ export const clients: Client[] = [
     name: 'Importadora Pacífico',
     stage: 'cotizacion-enviada',
     potential: 'A',
-    lastActivity: 'Ayer',
+    lastActivityDate: yesterday,
+    lastActivityLabel: formatDateLabel(yesterday),
     nextAction: 'Seguimiento de decisión',
     contacto: 'Sergio Araya',
     email: 'saraya@imppacifico.cl',
@@ -239,7 +237,8 @@ export const clients: Client[] = [
     name: 'Escuela Técnica Profesional',
     stage: 'cotizacion-enviada',
     potential: 'B',
-    lastActivity: '2 ene',
+    lastActivityDate: twoDaysAgo,
+    lastActivityLabel: formatDateLabel(twoDaysAgo),
     nextAction: 'Aclarar dudas sobre propuesta',
     contacto: 'Gloria Núñez',
     email: 'gnunez@etprofesional.cl',
@@ -253,7 +252,8 @@ export const clients: Client[] = [
     name: 'Restaurante El Gourmet',
     stage: 'cerrado',
     potential: 'A',
-    lastActivity: 'Hoy',
+    lastActivityDate: today,
+    lastActivityLabel: formatDateLabel(today),
     nextAction: 'Coordinar inicio de implementación',
     contacto: 'Rodrigo Bustamante',
     email: 'rbustamante@elgourmet.cl',
@@ -265,7 +265,8 @@ export const clients: Client[] = [
     name: 'Librería Universitaria',
     stage: 'cerrado',
     potential: 'B',
-    lastActivity: 'Ayer',
+    lastActivityDate: yesterday,
+    lastActivityLabel: formatDateLabel(yesterday),
     nextAction: 'Enviar contrato firmado',
     contacto: 'Isabel Rojas',
     email: 'irojas@libruniv.cl',
@@ -277,7 +278,8 @@ export const clients: Client[] = [
     name: 'Ferretería Los Andes',
     stage: 'cerrado',
     potential: 'C',
-    lastActivity: '30 dic',
+    lastActivityDate: fourDaysAgo,
+    lastActivityLabel: formatDateLabel(fourDaysAgo),
     nextAction: 'Planificar onboarding',
     contacto: 'Mario Castillo',
     email: 'mcastillo@ferrlosandes.cl',
@@ -291,7 +293,8 @@ export const clients: Client[] = [
     name: 'Consultoría Empresarial Pro',
     stage: 'seguimiento',
     potential: 'A',
-    lastActivity: 'Hoy',
+    lastActivityDate: today,
+    lastActivityLabel: formatDateLabel(today),
     nextAction: 'Revisar estado de implementación',
     contacto: 'Verónica Lagos',
     email: 'vlagos@consultpro.cl',
@@ -303,7 +306,8 @@ export const clients: Client[] = [
     name: 'Gimnasio Fitness Plus',
     stage: 'seguimiento',
     potential: 'B',
-    lastActivity: 'Ayer',
+    lastActivityDate: yesterday,
+    lastActivityLabel: formatDateLabel(yesterday),
     nextAction: 'Agendar reunión de seguimiento',
     contacto: 'Pablo Vergara',
     email: 'pvergara@fitnessplus.cl',
@@ -315,7 +319,8 @@ export const clients: Client[] = [
     name: 'Panadería Artesanal',
     stage: 'seguimiento',
     potential: 'C',
-    lastActivity: '3 ene',
+    lastActivityDate: threeDaysAgo,
+    lastActivityLabel: formatDateLabel(threeDaysAgo),
     nextAction: 'Consultar satisfacción',
     contacto: 'Carmen Soto',
     email: 'csoto@panartesanal.cl',
@@ -327,11 +332,140 @@ export const clients: Client[] = [
     name: 'Inmobiliaria Horizonte',
     stage: 'seguimiento',
     potential: 'A',
-    lastActivity: '28 dic',
+    lastActivityDate: fortyDaysAgo,
+    lastActivityLabel: formatDateLabel(fortyDaysAgo),
     nextAction: 'Evaluar posible expansión',
     contacto: 'Luis Pérez',
     email: 'lperez@inmohorizonte.cl',
     telefono: '+56 9 5432 1096',
     empresa: 'Inmobiliaria Horizonte',
+  },
+  {
+    id: '25',
+    name: 'Clínica Veterinaria PetCare',
+    stage: 'prospectos',
+    potential: 'B',
+    lastActivityDate: fiftyDaysAgo,
+    lastActivityLabel: formatDateLabel(fiftyDaysAgo),
+    nextAction: 'Retomar contacto',
+    contacto: 'Dr. Javier Moreno',
+    email: 'jmoreno@petcare.cl',
+    telefono: '+56 9 4321 5678',
+    empresa: 'Clínica Veterinaria PetCare',
+  },
+];
+
+export const actions: ActionItem[] = [
+  // Today's actions
+  {
+    id: 'a1',
+    clientId: '1',
+    description: 'Enviar email de presentación',
+    dueDate: today,
+    dueTime: '09:00',
+    done: false,
+    createdAt: today,
+  },
+  {
+    id: 'a2',
+    clientId: '5',
+    description: 'Llamada de seguimiento',
+    dueDate: today,
+    dueTime: '10:30',
+    done: false,
+    createdAt: yesterday,
+  },
+  {
+    id: 'a3',
+    clientId: '8',
+    description: 'Preparar materiales para visita de mañana',
+    dueDate: today,
+    dueTime: '14:00',
+    done: false,
+    createdAt: today,
+  },
+  {
+    id: 'a4',
+    clientId: '15',
+    description: 'Confirmar recepción de cotización',
+    dueDate: today,
+    dueTime: '16:00',
+    done: true,
+    createdAt: today,
+  },
+  {
+    id: 'a5',
+    clientId: '21',
+    description: 'Reunión de seguimiento',
+    dueDate: today,
+    done: false,
+    createdAt: twoDaysAgo,
+  },
+
+  // Tomorrow's actions
+  {
+    id: 'a6',
+    clientId: '8',
+    description: 'Visita a terreno',
+    dueDate: tomorrow,
+    dueTime: '10:00',
+    done: false,
+    createdAt: today,
+  },
+  {
+    id: 'a7',
+    clientId: '12',
+    description: 'Enviar especificaciones técnicas',
+    dueDate: tomorrow,
+    dueTime: '11:00',
+    done: false,
+    createdAt: yesterday,
+  },
+
+  // Future actions
+  {
+    id: 'a8',
+    clientId: '9',
+    description: 'Reunión programada',
+    dueDate: twoDaysFromNow,
+    dueTime: '15:00',
+    done: false,
+    createdAt: threeDaysAgo,
+  },
+  {
+    id: 'a9',
+    clientId: '10',
+    description: 'Visita en terreno',
+    dueDate: daysFromNowISO(3),
+    done: false,
+    createdAt: twoDaysAgo,
+  },
+
+  // Past actions
+  {
+    id: 'a10',
+    clientId: '6',
+    description: 'Primera llamada',
+    dueDate: yesterday,
+    dueTime: '15:00',
+    done: true,
+    createdAt: twoDaysAgo,
+  },
+  {
+    id: 'a11',
+    clientId: '2',
+    description: 'Investigación de mercado',
+    dueDate: yesterday,
+    done: true,
+    createdAt: threeDaysAgo,
+  },
+  {
+    id: 'a12',
+    clientId: '16',
+    description: 'Envío de cotización',
+    dueDate: twoDaysAgo,
+    dueTime: '09:00',
+    done: true,
+    createdAt: threeDaysAgo,
   },
 ];

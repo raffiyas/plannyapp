@@ -2,10 +2,12 @@
 
 import { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
-import { clients, STAGES, Stage, Potential } from '@/data/seed';
+import { STAGES, Stage, Potential } from '@/types';
+import { useStore } from '@/lib/store';
 import KanbanColumn from './KanbanColumn';
 
 export default function KanbanBoard() {
+  const { clients } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState<Stage | 'todos'>('todos');
   const [potentialFilter, setPotentialFilter] = useState<Potential | 'todos'>('todos');

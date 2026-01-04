@@ -1,4 +1,4 @@
-import { Client } from '@/data/seed';
+import { Client } from '@/types';
 import KanbanCard from './KanbanCard';
 
 interface KanbanColumnProps {
@@ -26,9 +26,15 @@ export default function KanbanColumn({
         </div>
 
         <div className="space-y-3">
-          {clients.map((client) => (
-            <KanbanCard key={client.id} client={client} />
-          ))}
+          {clients.length === 0 ? (
+            <div className="text-center py-8 text-gray-400 text-sm">
+              Sin clientes
+            </div>
+          ) : (
+            clients.map((client) => (
+              <KanbanCard key={client.id} client={client} />
+            ))
+          )}
         </div>
       </div>
     </div>
