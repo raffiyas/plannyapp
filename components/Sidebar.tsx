@@ -17,9 +17,9 @@ import { auth } from '@/lib/auth';
 const navigation = [
   { name: 'Dashboard', href: '/app/dashboard', icon: LayoutDashboard, disabled: false },
   { name: 'Mi Tablero', href: '/app/tablero', icon: KanbanSquare, disabled: false },
-  { name: 'Clientes', href: '/app/clientes', icon: Users, disabled: true },
+  { name: 'Clientes', href: '/app/clientes', icon: Users, disabled: false },
   { name: 'Agenda', href: '/app/agenda', icon: Calendar, disabled: false },
-  { name: 'Reportes', href: '/app/reportes', icon: BarChart3, disabled: true },
+  { name: 'Reportes', href: '/app/reportes', icon: BarChart3, disabled: false },
   { name: 'Configuración', href: '/app/configuracion', icon: Settings, disabled: false },
 ];
 

@@ -1,36 +1,71 @@
 import Link from 'next/link';
 import { Clock } from 'lucide-react';
 import { Client, POTENTIAL_COLORS } from '@/types';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface KanbanCardProps {
   client: Client;
+  isDragDisabled?: boolean;
 }
 
-export default function KanbanCard({ client }: KanbanCardProps) {
+export default function KanbanCard({ client, isDragDisabled = false }: KanbanCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: client.id,
+    disabled: isDragDisabled,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   return (
-    <Link
-      href={`/app/clientes/${client.id}`}
-      className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-teal-300 transition-all cursor-pointer"
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={isDragDisabled ? '' : 'cursor-grab active:cursor-grabbing'}
     >
-      <div className="flex items-start justify-between mb-2">
-        <h4 className="font-semibold text-gray-900 text-sm leading-tight flex-1">
-          {client.name}
-        </h4>
-        <span
-          className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
-            POTENTIAL_COLORS[client.potential]
-          }`}
-        >
-          {client.potential}
-        </span>
-      </div>
+      <Link
+        href={`/app/clientes/${client.id}`}
+        className="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-teal-300 transition-all"
+        onClick={(e) => {
+          // Prevent navigation while dragging
+          if (isDragging) {
+            e.preventDefault();
+          }
+        }}
+      >
+        <div className="flex items-start justify-between mb-2">
+          <h4 className="font-semibold text-gray-900 text-sm leading-tight flex-1">
+            {client.name}
+          </h4>
+          <span
+            className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
+              POTENTIAL_COLORS[client.potential]
+            }`}
+          >
+            {client.potential}
+          </span>
+        </div>
 
-      <p className="text-xs text-gray-600 mb-2">{client.nextAction}</p>
+        <p className="text-xs text-gray-600 mb-2">{client.nextAction}</p>
 
-      <div className="flex items-center text-xs text-gray-500">
-        <Clock className="w-3 h-3 mr-1" />
-        {client.lastActivityLabel}
-      </div>
-    </Link>
+        <div className="flex items-center text-xs text-gray-500">
+          <Clock className="w-3 h-3 mr-1" />
+          {client.lastActivityLabel}
+        </div>
+      </Link>
+    </div>
   );
 }
