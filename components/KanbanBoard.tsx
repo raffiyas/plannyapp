@@ -104,13 +104,20 @@ export default function KanbanBoard() {
     const sourceStage = activeClient.stage;
 
     // Determine the target stage
-    // Check if overId is a stage container
-    const overStageId = STAGES.find((s) => s.id === overId)?.id;
-    // Check if overId is a client card
-    const overClient = clients.find((c) => c.id === overId);
+    let overStage: Stage | undefined;
 
-    // Determine the final overStage
-    const overStage = overStageId || overClient?.stage;
+    // Check if dropping over a column
+    if (over.data.current?.type === 'column') {
+      overStage = over.data.current.stageId as Stage;
+    } else {
+      // Check if overId is a stage container
+      const overStageId = STAGES.find((s) => s.id === overId)?.id;
+      // Check if overId is a client card
+      const overClient = clients.find((c) => c.id === overId);
+      // Determine the final overStage
+      overStage = overStageId || overClient?.stage;
+    }
+
     if (!overStage) return;
 
     // Case 1: Moving between different stages
