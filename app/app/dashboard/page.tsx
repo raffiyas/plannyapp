@@ -5,7 +5,7 @@ import { useStore } from '@/lib/store';
 import { isWithinLastDays, isOlderThanDays, daysSince, todayISO, formatTime } from '@/lib/date';
 import { STAGES } from '@/types';
 import { useMemo } from 'react';
-import { TrendingUp, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, AlertCircle, Clock, CheckCircle2, Calendar, Users } from 'lucide-react';
 
 export default function DashboardPage() {
   const { clients, actions, toggleActionDone, getClientById } = useStore();
@@ -48,7 +48,7 @@ export default function DashboardPage() {
       .slice(0, 6);
   }, [clients]);
 
-  // Today's pending actions
+  // Today's actions (all actions for today)
   const todaysActions = useMemo(() => {
     return actions
       .filter((action) => action.dueDate === today)
@@ -62,6 +62,11 @@ export default function DashboardPage() {
         return 0;
       });
   }, [actions, today]);
+
+  // Today's pending actions for empty state check
+  const todaysPendingActions = useMemo(() => {
+    return todaysActions.filter((action) => !action.done);
+  }, [todaysActions]);
 
   const handleToggleDone = (actionId: string) => {
     toggleActionDone(actionId);
@@ -142,9 +147,16 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="divide-y divide-gray-200">
-            {clientsNeedingAction.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
-                No hay clientes para mostrar
+            {kpis.noContact30Days === 0 ? (
+              <div className="p-8 text-center">
+                <div className="flex justify-center mb-3">
+                  <div className="p-2 bg-green-100 rounded-full">
+                    <CheckCircle2 className="w-6 h-6 text-green-600" />
+                  </div>
+                </div>
+                <p className="text-gray-600">
+                  Todo al día. No hay clientes sin contacto reciente.
+                </p>
               </div>
             ) : (
               clientsNeedingAction.map((client) => {
@@ -153,7 +165,7 @@ export default function DashboardPage() {
                   <Link
                     key={client.id}
                     href={`/app/clientes/${client.id}`}
-                    className="block p-4 hover:bg-gray-50 transition-colors"
+                    className="block p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -192,12 +204,19 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="divide-y divide-gray-200">
-            {todaysActions.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
-                No hay gestiones programadas para hoy
+            {todaysPendingActions.length === 0 ? (
+              <div className="p-8 text-center">
+                <div className="flex justify-center mb-3">
+                  <div className="p-2 bg-teal-100 rounded-full">
+                    <CheckCircle2 className="w-6 h-6 text-teal-600" />
+                  </div>
+                </div>
+                <p className="text-gray-600">
+                  No tienes pendientes para hoy.
+                </p>
               </div>
             ) : (
-              todaysActions.map((action) => {
+              todaysPendingActions.map((action) => {
                 const client = getClientById(action.clientId);
                 return (
                   <div
@@ -211,7 +230,7 @@ export default function DashboardPage() {
                       <div className="flex-1">
                         <Link
                           href={`/app/clientes/${client?.id}`}
-                          className="font-semibold text-teal-600 hover:text-teal-700"
+                          className="font-semibold text-teal-600 hover:text-teal-700 hover:underline"
                         >
                           {client?.name}
                         </Link>
@@ -221,20 +240,9 @@ export default function DashboardPage() {
                       </div>
                       <button
                         onClick={() => handleToggleDone(action.id)}
-                        className={`flex-shrink-0 px-3 py-1 rounded text-xs font-medium transition-colors ${
-                          action.done
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                        }`}
+                        className="flex-shrink-0 px-3 py-1 rounded text-xs font-medium transition-colors bg-gray-100 text-gray-800 hover:bg-gray-200"
                       >
-                        {action.done ? (
-                          <span className="flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Realizada
-                          </span>
-                        ) : (
-                          'Marcar realizada'
-                        )}
+                        Marcar realizada
                       </button>
                     </div>
                   </div>

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { todayISO, isThisWeek, formatDateLabel, formatTime } from '@/lib/date';
-import { CheckCircle2, Circle, Clock } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, Calendar } from 'lucide-react';
 
 type ViewMode = 'today' | 'week';
 type FilterMode = 'pending' | 'all';
@@ -46,22 +46,24 @@ export default function AgendaPage() {
       groups[action.dueDate].push(action);
     });
 
-    // Sort each group by time
+    // Sort each group by time, then by createdAt
     Object.keys(groups).forEach((date) => {
       groups[date].sort((a, b) => {
+        // First, sort by dueTime
         if (a.dueTime && b.dueTime) {
           return a.dueTime.localeCompare(b.dueTime);
         }
         if (a.dueTime) return -1;
         if (b.dueTime) return 1;
-        return 0;
+        // Then by createdAt
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       });
     });
 
     return groups;
   }, [filteredActions]);
 
-  // Get sorted dates for week view
+  // Get sorted dates for week view (ascending from today)
   const sortedDates = useMemo(() => {
     return Object.keys(groupedActions).sort();
   }, [groupedActions]);
@@ -88,7 +90,7 @@ export default function AgendaPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 viewMode === 'today'
                   ? 'bg-teal-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
               }`}
             >
               Hoy
@@ -98,7 +100,7 @@ export default function AgendaPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 viewMode === 'week'
                   ? 'bg-teal-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
               }`}
             >
               Esta semana
@@ -111,8 +113,8 @@ export default function AgendaPage() {
               onClick={() => setFilterMode('pending')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filterMode === 'pending'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
               }`}
             >
               Pendientes
@@ -121,8 +123,8 @@ export default function AgendaPage() {
               onClick={() => setFilterMode('all')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filterMode === 'all'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
               }`}
             >
               Todas
@@ -137,10 +139,20 @@ export default function AgendaPage() {
           // Today view - simple list
           <div className="divide-y divide-gray-200">
             {filteredActions.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                {filterMode === 'pending'
-                  ? 'No hay gestiones pendientes para hoy'
-                  : 'No hay gestiones programadas para hoy'}
+              <div className="p-12 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-gray-100 rounded-full">
+                    <Calendar className="w-8 h-8 text-gray-400" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Sin actividades
+                </h3>
+                <p className="text-gray-600">
+                  {filterMode === 'pending'
+                    ? 'No tienes pendientes para hoy.'
+                    : 'No hay actividades registradas para hoy.'}
+                </p>
               </div>
             ) : (
               filteredActions
@@ -163,12 +175,13 @@ export default function AgendaPage() {
                       <div className="flex items-start gap-3">
                         <button
                           onClick={() => handleToggleDone(action.id)}
-                          className="flex-shrink-0 mt-1"
+                          className="flex-shrink-0 mt-1 p-1 hover:bg-gray-100 rounded transition-colors"
+                          aria-label={action.done ? 'Marcar como pendiente' : 'Marcar como realizada'}
                         >
                           {action.done ? (
                             <CheckCircle2 className="w-5 h-5 text-green-600" />
                           ) : (
-                            <Circle className="w-5 h-5 text-gray-400" />
+                            <Circle className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                           )}
                         </button>
                         <div className="flex-shrink-0 w-16 text-sm font-medium text-gray-600">
@@ -177,7 +190,7 @@ export default function AgendaPage() {
                         <div className="flex-1">
                           <Link
                             href={`/app/clientes/${client?.id}`}
-                            className="font-semibold text-teal-600 hover:text-teal-700"
+                            className="font-semibold text-teal-600 hover:text-teal-700 hover:underline"
                           >
                             {client?.name}
                           </Link>
@@ -204,10 +217,18 @@ export default function AgendaPage() {
           // Week view - grouped by date
           <div>
             {sortedDates.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                {filterMode === 'pending'
-                  ? 'No hay gestiones pendientes para esta semana'
-                  : 'No hay gestiones programadas para esta semana'}
+              <div className="p-12 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-gray-100 rounded-full">
+                    <Calendar className="w-8 h-8 text-gray-400" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Sin actividades
+                </h3>
+                <p className="text-gray-600">
+                  No hay actividades programadas para esta semana.
+                </p>
               </div>
             ) : (
               sortedDates.map((date, dateIndex) => (
@@ -238,12 +259,13 @@ export default function AgendaPage() {
                           <div className="flex items-start gap-3">
                             <button
                               onClick={() => handleToggleDone(action.id)}
-                              className="flex-shrink-0 mt-1"
+                              className="flex-shrink-0 mt-1 p-1 hover:bg-gray-100 rounded transition-colors"
+                              aria-label={action.done ? 'Marcar como pendiente' : 'Marcar como realizada'}
                             >
                               {action.done ? (
                                 <CheckCircle2 className="w-5 h-5 text-green-600" />
                               ) : (
-                                <Circle className="w-5 h-5 text-gray-400" />
+                                <Circle className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                               )}
                             </button>
                             <div className="flex-shrink-0 w-16 text-sm font-medium text-gray-600">
@@ -252,7 +274,7 @@ export default function AgendaPage() {
                             <div className="flex-1">
                               <Link
                                 href={`/app/clientes/${client?.id}`}
-                                className="font-semibold text-teal-600 hover:text-teal-700"
+                                className="font-semibold text-teal-600 hover:text-teal-700 hover:underline"
                               >
                                 {client?.name}
                               </Link>
