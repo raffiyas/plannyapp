@@ -1,9 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Client, ActionItem, Stage, Potential } from '@/types';
+import { Client, ActionItem, Stage, Potential, STAGES } from '@/types';
 import { clients as seedClients, actions as seedActions } from '@/data/seed';
 import { todayISO, formatDateLabel } from './date';
+
+// Canonical list of all stages
+const ALL_STAGES: Stage[] = STAGES.map(s => s.id as Stage);
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -11,6 +14,18 @@ const STORAGE_KEYS = {
   ACTIONS: 'planny_actions',
   BOARD_ORDER: 'planny_board_order',
 };
+
+// Normalize boardOrder to ensure all stages exist and IDs are strings
+function normalizeBoardOrder(boardOrder: Partial<Record<Stage, (string | number)[]>>): Record<Stage, string[]> {
+  const normalized: Record<Stage, string[]> = {} as Record<Stage, string[]>;
+
+  ALL_STAGES.forEach(stage => {
+    const stageOrder = boardOrder[stage] || [];
+    normalized[stage] = stageOrder.map(String);
+  });
+
+  return normalized;
+}
 
 // State interface
 interface StoreState {
@@ -104,21 +119,19 @@ const StoreContext = createContext<StoreContextValue | undefined>(undefined);
 
 // Helper function to initialize board order from clients
 function initializeBoardOrder(clients: Client[]): Record<Stage, string[]> {
-  const order: Record<Stage, string[]> = {
-    'prospectos': [],
-    'contactados': [],
-    'visita-agendada': [],
-    'visitado': [],
-    'cotizacion-enviada': [],
-    'cerrado': [],
-    'seguimiento': [],
-  };
+  const order: Partial<Record<Stage, string[]>> = {};
 
-  clients.forEach(client => {
-    order[client.stage].push(client.id);
+  // Initialize all stages with empty arrays
+  ALL_STAGES.forEach(stage => {
+    order[stage] = [];
   });
 
-  return order;
+  // Add client IDs to their respective stages (as strings)
+  clients.forEach(client => {
+    order[client.stage]?.push(String(client.id));
+  });
+
+  return normalizeBoardOrder(order);
 }
 
 // Provider
@@ -152,7 +165,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         // Load or initialize board order
         let boardOrder: Record<Stage, string[]>;
         if (boardOrderJSON) {
-          boardOrder = JSON.parse(boardOrderJSON);
+          const rawBoardOrder = JSON.parse(boardOrderJSON);
+          // Normalize to ensure all stages exist and IDs are strings
+          boardOrder = normalizeBoardOrder(rawBoardOrder);
         } else {
           // Initialize from current clients
           boardOrder = initializeBoardOrder(clients);
