@@ -110,18 +110,15 @@ export default function KanbanBoard() {
     // Determine the target stage
     let overStage: Stage | undefined;
 
-    // Check if dropping over a column
+    // Check if dropping over a column (via metadata)
     if (over.data.current?.type === 'column') {
       overStage = over.data.current.stageId as Stage;
+    } else if (typeof overId === 'string' && overId.startsWith('column:')) {
+      // Extract stage from column: prefix
+      overStage = overId.replace('column:', '') as Stage;
     } else if (overClient) {
       // Dropping over a client card
       overStage = overClient.stage;
-    } else {
-      // Check if overId matches a stage directly
-      const matchingStage = STAGES.find((s) => s.id === overId);
-      if (matchingStage) {
-        overStage = matchingStage.id;
-      }
     }
 
     // Guard: must have valid stages

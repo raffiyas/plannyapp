@@ -19,7 +19,7 @@ export default function KanbanColumn({
   isDragDisabled = false,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
-    id: stage,
+    id: `column:${stage}`,
     data: {
       type: 'column',
       stageId: stage,
