@@ -85,62 +85,7 @@ export default function KanbanBoard() {
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    // Find the active client
-    const activeClient = clients.find((c) => c.id === activeId);
-    if (!activeClient) return;
-
-    // Check if over is a container (stage) or an item (client)
-    const overStage = STAGES.find((s) => s.id === overId)?.id;
-    const overClient = clients.find((c) => c.id === overId);
-
-    if (overStage) {
-      // Moving to a different stage
-      if (activeClient.stage !== overStage) {
-        // Update client stage
-        updateClient(activeId, { stage: overStage });
-
-        // Update board order
-        const newBoardOrder = { ...boardOrder };
-
-        // Remove from old stage
-        newBoardOrder[activeClient.stage] = newBoardOrder[activeClient.stage].filter(
-          (id) => id !== activeId
-        );
-
-        // Add to new stage
-        if (!newBoardOrder[overStage].includes(activeId)) {
-          newBoardOrder[overStage] = [...newBoardOrder[overStage], activeId];
-        }
-
-        updateBoardOrder(newBoardOrder);
-      }
-    } else if (overClient && overClient.stage !== activeClient.stage) {
-      // Moving to a different stage (via another client)
-      const targetStage = overClient.stage;
-
-      // Update client stage
-      updateClient(activeId, { stage: targetStage });
-
-      // Update board order
-      const newBoardOrder = { ...boardOrder };
-
-      // Remove from old stage
-      newBoardOrder[activeClient.stage] = newBoardOrder[activeClient.stage].filter(
-        (id) => id !== activeId
-      );
-
-      // Add to new stage at the position of the over client
-      const targetIndex = newBoardOrder[targetStage].indexOf(overClient.id);
-      newBoardOrder[targetStage].splice(targetIndex, 0, activeId);
-
-      updateBoardOrder(newBoardOrder);
-    }
+    // No mutations here - all changes happen in handleDragEnd
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -152,13 +97,47 @@ export default function KanbanBoard() {
     const activeId = active.id as string;
     const overId = over.id as string;
 
+    // Find the active client
     const activeClient = clients.find((c) => c.id === activeId);
+    if (!activeClient) return;
+
+    const sourceStage = activeClient.stage;
+
+    // Determine the target stage
+    // Check if overId is a stage container
+    const overStageId = STAGES.find((s) => s.id === overId)?.id;
+    // Check if overId is a client card
     const overClient = clients.find((c) => c.id === overId);
 
-    // If both are clients in the same stage, reorder them
-    if (activeClient && overClient && activeClient.stage === overClient.stage) {
-      const stage = activeClient.stage;
-      const stageOrder = [...boardOrder[stage]];
+    // Determine the final overStage
+    const overStage = overStageId || overClient?.stage;
+    if (!overStage) return;
+
+    // Case 1: Moving between different stages
+    if (sourceStage !== overStage) {
+      // Update client stage
+      updateClient(activeId, { stage: overStage });
+
+      // Update board order
+      const newBoardOrder = { ...boardOrder };
+
+      // Remove from source stage
+      newBoardOrder[sourceStage] = newBoardOrder[sourceStage].filter(
+        (id) => id !== activeId
+      );
+
+      // Add to target stage at the end
+      if (!newBoardOrder[overStage].includes(activeId)) {
+        newBoardOrder[overStage] = [...newBoardOrder[overStage], activeId];
+      }
+
+      updateBoardOrder(newBoardOrder);
+      return;
+    }
+
+    // Case 2: Reordering within the same stage
+    if (overClient && sourceStage === overStage) {
+      const stageOrder = [...boardOrder[sourceStage]];
 
       const oldIndex = stageOrder.indexOf(activeId);
       const newIndex = stageOrder.indexOf(overId);
@@ -167,7 +146,7 @@ export default function KanbanBoard() {
         const newOrder = arrayMove(stageOrder, oldIndex, newIndex);
         updateBoardOrder({
           ...boardOrder,
-          [stage]: newOrder,
+          [sourceStage]: newOrder,
         });
       }
     }
