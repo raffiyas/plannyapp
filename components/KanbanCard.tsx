@@ -1,16 +1,10 @@
 import Link from 'next/link';
 import { Clock } from 'lucide-react';
-import { Client, Potential } from '@/data/seed';
+import { Client, POTENTIAL_COLORS } from '@/types';
 
 interface KanbanCardProps {
   client: Client;
 }
-
-const potentialColors: Record<Potential, string> = {
-  A: 'bg-green-100 text-green-800',
-  B: 'bg-yellow-100 text-yellow-800',
-  C: 'bg-gray-100 text-gray-800',
-};
 
 export default function KanbanCard({ client }: KanbanCardProps) {
   return (
@@ -24,7 +18,7 @@ export default function KanbanCard({ client }: KanbanCardProps) {
         </h4>
         <span
           className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
-            potentialColors[client.potential]
+            POTENTIAL_COLORS[client.potential]
           }`}
         >
           {client.potential}
@@ -35,7 +29,7 @@ export default function KanbanCard({ client }: KanbanCardProps) {
 
       <div className="flex items-center text-xs text-gray-500">
         <Clock className="w-3 h-3 mr-1" />
-        {client.lastActivity}
+        {client.lastActivityLabel}
       </div>
     </Link>
   );
