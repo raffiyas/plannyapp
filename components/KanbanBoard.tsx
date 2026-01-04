@@ -19,6 +19,9 @@ import {
 import { arrayMove } from '@dnd-kit/sortable';
 import KanbanCard from './KanbanCard';
 
+// Canonical list of all stages
+const ALL_STAGES: Stage[] = STAGES.map(s => s.id as Stage);
+
 export default function KanbanBoard() {
   const { clients, boardOrder, updateClient, updateBoardOrder } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
@@ -69,13 +72,13 @@ export default function KanbanBoard() {
     const stageOrder = boardOrder[stage] || [];
     const stageClients = filteredClients.filter((client) => client.stage === stage);
 
-    // Sort clients according to boardOrder
+    // Sort clients according to boardOrder (compare as strings)
     const orderedClients = stageOrder
-      .map((id) => stageClients.find((c) => c.id === id))
+      .map((id) => stageClients.find((c) => String(c.id) === id))
       .filter((c): c is Client => c !== undefined);
 
-    // Add any new clients not in the order yet
-    const newClients = stageClients.filter((c) => !stageOrder.includes(c.id));
+    // Add any new clients not in the order yet (compare as strings)
+    const newClients = stageClients.filter((c) => !stageOrder.includes(String(c.id)));
 
     return [...orderedClients, ...newClients];
   };
@@ -94,64 +97,77 @@ export default function KanbanBoard() {
 
     if (!over) return;
 
-    // Define all variables in the same scope
-    const activeId = active.id as string;
-    const overId = over.id as string;
+    // Normalize IDs to strings
+    const activeId = String(active.id);
+    const overId = String(over.id);
 
     // Find the active client
-    const activeClient = clients.find((c) => c.id === activeId);
+    const activeClient = clients.find((c) => String(c.id) === activeId);
     if (!activeClient) return;
 
     const sourceStage = activeClient.stage;
 
     // Find over client (if dropping over a card)
-    const overClient = clients.find((c) => c.id === overId);
+    const overClient = clients.find((c) => String(c.id) === overId);
 
     // Determine the target stage
     let overStage: Stage | undefined;
 
-    // Check if dropping over a column (via metadata)
+    // Priority 1: Check metadata (for empty columns)
     if (over.data.current?.type === 'column') {
       overStage = over.data.current.stageId as Stage;
-    } else if (typeof overId === 'string' && overId.startsWith('column:')) {
-      // Extract stage from column: prefix
+    }
+    // Priority 2: Parse column: prefix
+    else if (overId.startsWith('column:')) {
       overStage = overId.replace('column:', '') as Stage;
-    } else if (overClient) {
-      // Dropping over a client card
+    }
+    // Priority 3: Dropping over a client card
+    else if (overClient) {
       overStage = overClient.stage;
     }
 
-    // Guard: must have valid stages
-    if (!overStage) return;
+    // Guard: must have valid stage
+    if (!overStage) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[DND] No valid overStage found', { activeId, overId, sourceStage });
+      }
+      return;
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[DND]', { activeId, overId, sourceStage, overStage });
+    }
 
     // Case 1: Moving between different stages
     if (sourceStage !== overStage) {
       // Update client stage
-      updateClient(activeId, { stage: overStage });
+      updateClient(activeClient.id, { stage: overStage });
 
-      // Update board order
+      // Get current orders (guaranteed to exist from normalized boardOrder)
       const sourceOrder = boardOrder[sourceStage] || [];
       const destOrder = boardOrder[overStage] || [];
 
       // Remove from source
       const newSourceOrder = sourceOrder.filter((id) => id !== activeId);
 
+      // Remove from destination (safety, in case it's already there)
+      const cleanDestOrder = destOrder.filter((id) => id !== activeId);
+
       // Determine insert position in destination
-      let insertIndex = destOrder.length; // Default: end of list
+      let insertIndex = cleanDestOrder.length; // Default: end of list
 
       if (overClient && overClient.stage === overStage) {
         // Dropping over a card in the target column
-        const overIndex = destOrder.indexOf(overClient.id);
+        const overIdStr = String(overClient.id);
+        const overIndex = cleanDestOrder.indexOf(overIdStr);
         if (overIndex !== -1) {
           insertIndex = overIndex;
         }
       }
 
       // Insert at the calculated position
-      const newDestOrder = [...destOrder];
-      if (!newDestOrder.includes(activeId)) {
-        newDestOrder.splice(insertIndex, 0, activeId);
-      }
+      const newDestOrder = [...cleanDestOrder];
+      newDestOrder.splice(insertIndex, 0, activeId);
 
       // Update both stage orders
       updateBoardOrder({
@@ -165,7 +181,6 @@ export default function KanbanBoard() {
 
     // Case 2: Reordering within the same stage
     if (sourceStage === overStage && overClient) {
-      // Ensure stage order array exists
       const stageOrder = boardOrder[sourceStage] || [];
       if (stageOrder.length === 0) return;
 
