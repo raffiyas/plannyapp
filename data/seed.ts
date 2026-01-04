@@ -1,0 +1,337 @@
+export type Potential = 'A' | 'B' | 'C';
+
+export type Stage =
+  | 'prospectos'
+  | 'contactados'
+  | 'visita-agendada'
+  | 'visitado'
+  | 'cotizacion-enviada'
+  | 'cerrado'
+  | 'seguimiento';
+
+export interface Client {
+  id: string;
+  name: string;
+  stage: Stage;
+  potential: Potential;
+  lastActivity: string;
+  nextAction: string;
+  contacto?: string;
+  email?: string;
+  telefono?: string;
+  empresa?: string;
+}
+
+export const STAGES = [
+  { id: 'prospectos' as Stage, label: 'Prospectos', color: 'bg-gray-500' },
+  { id: 'contactados' as Stage, label: 'Contactados', color: 'bg-blue-500' },
+  { id: 'visita-agendada' as Stage, label: 'Visita agendada', color: 'bg-purple-500' },
+  { id: 'visitado' as Stage, label: 'Visitado', color: 'bg-yellow-500' },
+  { id: 'cotizacion-enviada' as Stage, label: 'Cotización enviada', color: 'bg-orange-500' },
+  { id: 'cerrado' as Stage, label: 'Cerrado', color: 'bg-green-500' },
+  { id: 'seguimiento' as Stage, label: 'Seguimiento', color: 'bg-teal-500' },
+];
+
+export const clients: Client[] = [
+  // Prospectos
+  {
+    id: '1',
+    name: 'Construcciones Medina S.A.',
+    stage: 'prospectos',
+    potential: 'A',
+    lastActivity: 'Hoy',
+    nextAction: 'Enviar email de presentación',
+    contacto: 'Carlos Medina',
+    email: 'carlos.medina@cmedina.cl',
+    telefono: '+56 9 8765 4321',
+    empresa: 'Construcciones Medina S.A.',
+  },
+  {
+    id: '2',
+    name: 'Distribuidora El Roble',
+    stage: 'prospectos',
+    potential: 'B',
+    lastActivity: 'Ayer',
+    nextAction: 'Investigar necesidades',
+    contacto: 'Patricia González',
+    email: 'pgonzalez@elroble.cl',
+    telefono: '+56 9 7654 3210',
+    empresa: 'Distribuidora El Roble',
+  },
+  {
+    id: '3',
+    name: 'Transportes Valparaíso',
+    stage: 'prospectos',
+    potential: 'C',
+    lastActivity: '2 ene',
+    nextAction: 'Llamar para conocer interés',
+    contacto: 'Roberto Silva',
+    email: 'rsilva@transvalpo.cl',
+    telefono: '+56 9 6543 2109',
+    empresa: 'Transportes Valparaíso',
+  },
+  {
+    id: '4',
+    name: 'Inversiones Cordillera',
+    stage: 'prospectos',
+    potential: 'A',
+    lastActivity: '30 dic',
+    nextAction: 'Agendar llamada inicial',
+    contacto: 'Ana María Torres',
+    email: 'atorres@cordillera.cl',
+    telefono: '+56 9 5432 1098',
+    empresa: 'Inversiones Cordillera',
+  },
+
+  // Contactados
+  {
+    id: '5',
+    name: 'Supermercado La Estrella',
+    stage: 'contactados',
+    potential: 'A',
+    lastActivity: 'Hoy',
+    nextAction: 'Enviar propuesta inicial',
+    contacto: 'Miguel Ángel Ramírez',
+    email: 'mramirez@laestrella.cl',
+    telefono: '+56 9 4321 0987',
+    empresa: 'Supermercado La Estrella',
+  },
+  {
+    id: '6',
+    name: 'Laboratorios Bío Bío',
+    stage: 'contactados',
+    potential: 'B',
+    lastActivity: 'Ayer',
+    nextAction: 'Confirmar interés en reunión',
+    contacto: 'Daniela Muñoz',
+    email: 'dmunoz@labbiobio.cl',
+    telefono: '+56 9 3210 9876',
+    empresa: 'Laboratorios Bío Bío',
+  },
+  {
+    id: '7',
+    name: 'Hotel Mar del Plata',
+    stage: 'contactados',
+    potential: 'B',
+    lastActivity: '3 ene',
+    nextAction: 'Seguimiento por correo',
+    contacto: 'Fernando Campos',
+    email: 'fcampos@hotelmardelplata.cl',
+    telefono: '+56 9 2109 8765',
+    empresa: 'Hotel Mar del Plata',
+  },
+
+  // Visita agendada
+  {
+    id: '8',
+    name: 'Agrícola San José',
+    stage: 'visita-agendada',
+    potential: 'A',
+    lastActivity: 'Hoy',
+    nextAction: 'Visita agendada para mañana 10:00',
+    contacto: 'José Luis Vargas',
+    email: 'jvargas@agricolasj.cl',
+    telefono: '+56 9 1098 7654',
+    empresa: 'Agrícola San José',
+  },
+  {
+    id: '9',
+    name: 'Textiles Araucanía',
+    stage: 'visita-agendada',
+    potential: 'B',
+    lastActivity: 'Ayer',
+    nextAction: 'Reunión programada 5 enero 15:00',
+    contacto: 'Carolina Fuentes',
+    email: 'cfuentes@textaraucania.cl',
+    telefono: '+56 9 0987 6543',
+    empresa: 'Textiles Araucanía',
+  },
+  {
+    id: '10',
+    name: 'Automotriz Central',
+    stage: 'visita-agendada',
+    potential: 'A',
+    lastActivity: '2 ene',
+    nextAction: 'Visita en terreno 6 enero',
+    contacto: 'Ricardo Hernández',
+    email: 'rhernandez@autocentral.cl',
+    telefono: '+56 9 9876 5432',
+    empresa: 'Automotriz Central',
+  },
+
+  // Visitado
+  {
+    id: '11',
+    name: 'Farmacia Santa Cruz',
+    stage: 'visitado',
+    potential: 'B',
+    lastActivity: 'Hoy',
+    nextAction: 'Preparar cotización personalizada',
+    contacto: 'Marcela Reyes',
+    email: 'mreyes@farmasantacruz.cl',
+    telefono: '+56 9 8765 4320',
+    empresa: 'Farmacia Santa Cruz',
+  },
+  {
+    id: '12',
+    name: 'Servicios Tecnológicos LTDA',
+    stage: 'visitado',
+    potential: 'A',
+    lastActivity: 'Ayer',
+    nextAction: 'Enviar especificaciones técnicas',
+    contacto: 'Andrés Sepúlveda',
+    email: 'asepulveda@servitec.cl',
+    telefono: '+56 9 7654 3209',
+    empresa: 'Servicios Tecnológicos LTDA',
+  },
+  {
+    id: '13',
+    name: 'Café y Pastelería Luna',
+    stage: 'visitado',
+    potential: 'C',
+    lastActivity: '31 dic',
+    nextAction: 'Consultar sobre presupuesto',
+    contacto: 'Mónica Contreras',
+    email: 'mcontreras@cafeluna.cl',
+    telefono: '+56 9 6543 2108',
+    empresa: 'Café y Pastelería Luna',
+  },
+  {
+    id: '14',
+    name: 'Metalúrgica del Sur',
+    stage: 'visitado',
+    potential: 'A',
+    lastActivity: '29 dic',
+    nextAction: 'Definir alcance del proyecto',
+    contacto: 'Eduardo Morales',
+    email: 'emorales@metalsur.cl',
+    telefono: '+56 9 5432 1097',
+    empresa: 'Metalúrgica del Sur',
+  },
+
+  // Cotización enviada
+  {
+    id: '15',
+    name: 'Clínica Dental Sonrisa',
+    stage: 'cotizacion-enviada',
+    potential: 'B',
+    lastActivity: 'Hoy',
+    nextAction: 'Llamar para confirmar recepción',
+    contacto: 'Dra. Claudia Pizarro',
+    email: 'cpizarro@clinicasonrisa.cl',
+    telefono: '+56 9 4321 0986',
+    empresa: 'Clínica Dental Sonrisa',
+  },
+  {
+    id: '16',
+    name: 'Importadora Pacífico',
+    stage: 'cotizacion-enviada',
+    potential: 'A',
+    lastActivity: 'Ayer',
+    nextAction: 'Seguimiento de decisión',
+    contacto: 'Sergio Araya',
+    email: 'saraya@imppacifico.cl',
+    telefono: '+56 9 3210 9875',
+    empresa: 'Importadora Pacífico',
+  },
+  {
+    id: '17',
+    name: 'Escuela Técnica Profesional',
+    stage: 'cotizacion-enviada',
+    potential: 'B',
+    lastActivity: '2 ene',
+    nextAction: 'Aclarar dudas sobre propuesta',
+    contacto: 'Gloria Núñez',
+    email: 'gnunez@etprofesional.cl',
+    telefono: '+56 9 2109 8764',
+    empresa: 'Escuela Técnica Profesional',
+  },
+
+  // Cerrado
+  {
+    id: '18',
+    name: 'Restaurante El Gourmet',
+    stage: 'cerrado',
+    potential: 'A',
+    lastActivity: 'Hoy',
+    nextAction: 'Coordinar inicio de implementación',
+    contacto: 'Rodrigo Bustamante',
+    email: 'rbustamante@elgourmet.cl',
+    telefono: '+56 9 1098 7653',
+    empresa: 'Restaurante El Gourmet',
+  },
+  {
+    id: '19',
+    name: 'Librería Universitaria',
+    stage: 'cerrado',
+    potential: 'B',
+    lastActivity: 'Ayer',
+    nextAction: 'Enviar contrato firmado',
+    contacto: 'Isabel Rojas',
+    email: 'irojas@libruniv.cl',
+    telefono: '+56 9 0987 6542',
+    empresa: 'Librería Universitaria',
+  },
+  {
+    id: '20',
+    name: 'Ferretería Los Andes',
+    stage: 'cerrado',
+    potential: 'C',
+    lastActivity: '30 dic',
+    nextAction: 'Planificar onboarding',
+    contacto: 'Mario Castillo',
+    email: 'mcastillo@ferrlosandes.cl',
+    telefono: '+56 9 9876 5431',
+    empresa: 'Ferretería Los Andes',
+  },
+
+  // Seguimiento
+  {
+    id: '21',
+    name: 'Consultoría Empresarial Pro',
+    stage: 'seguimiento',
+    potential: 'A',
+    lastActivity: 'Hoy',
+    nextAction: 'Revisar estado de implementación',
+    contacto: 'Verónica Lagos',
+    email: 'vlagos@consultpro.cl',
+    telefono: '+56 9 8765 4319',
+    empresa: 'Consultoría Empresarial Pro',
+  },
+  {
+    id: '22',
+    name: 'Gimnasio Fitness Plus',
+    stage: 'seguimiento',
+    potential: 'B',
+    lastActivity: 'Ayer',
+    nextAction: 'Agendar reunión de seguimiento',
+    contacto: 'Pablo Vergara',
+    email: 'pvergara@fitnessplus.cl',
+    telefono: '+56 9 7654 3208',
+    empresa: 'Gimnasio Fitness Plus',
+  },
+  {
+    id: '23',
+    name: 'Panadería Artesanal',
+    stage: 'seguimiento',
+    potential: 'C',
+    lastActivity: '3 ene',
+    nextAction: 'Consultar satisfacción',
+    contacto: 'Carmen Soto',
+    email: 'csoto@panartesanal.cl',
+    telefono: '+56 9 6543 2107',
+    empresa: 'Panadería Artesanal',
+  },
+  {
+    id: '24',
+    name: 'Inmobiliaria Horizonte',
+    stage: 'seguimiento',
+    potential: 'A',
+    lastActivity: '28 dic',
+    nextAction: 'Evaluar posible expansión',
+    contacto: 'Luis Pérez',
+    email: 'lperez@inmohorizonte.cl',
+    telefono: '+56 9 5432 1096',
+    empresa: 'Inmobiliaria Horizonte',
+  },
+];
