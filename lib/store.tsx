@@ -9,22 +9,25 @@ import { todayISO, formatDateLabel } from './date';
 const STORAGE_KEYS = {
   CLIENTS: 'planny_clients',
   ACTIONS: 'planny_actions',
+  BOARD_ORDER: 'planny_board_order',
 };
 
 // State interface
 interface StoreState {
   clients: Client[];
   actions: ActionItem[];
+  boardOrder: Record<Stage, string[]>;
   isHydrated: boolean;
 }
 
 // Action types
 type StoreAction =
-  | { type: 'HYDRATE'; payload: { clients: Client[]; actions: ActionItem[] } }
+  | { type: 'HYDRATE'; payload: { clients: Client[]; actions: ActionItem[]; boardOrder: Record<Stage, string[]> } }
   | { type: 'UPDATE_CLIENT'; payload: { id: string; updates: Partial<Client> } }
   | { type: 'ADD_ACTION'; payload: ActionItem }
   | { type: 'TOGGLE_ACTION_DONE'; payload: string }
-  | { type: 'UPDATE_ACTION'; payload: { id: string; updates: Partial<ActionItem> } };
+  | { type: 'UPDATE_ACTION'; payload: { id: string; updates: Partial<ActionItem> } }
+  | { type: 'UPDATE_BOARD_ORDER'; payload: Record<Stage, string[]> };
 
 // Reducer
 function storeReducer(state: StoreState, action: StoreAction): StoreState {
@@ -34,6 +37,7 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
         ...state,
         clients: action.payload.clients,
         actions: action.payload.actions,
+        boardOrder: action.payload.boardOrder,
         isHydrated: true,
       };
 
@@ -73,6 +77,12 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
         ),
       };
 
+    case 'UPDATE_BOARD_ORDER':
+      return {
+        ...state,
+        boardOrder: action.payload,
+      };
+
     default:
       return state;
   }
@@ -83,6 +93,7 @@ interface StoreContextValue extends StoreState {
   updateClient: (id: string, updates: Partial<Client>) => void;
   addAction: (action: ActionItem) => void;
   toggleActionDone: (actionId: string) => void;
+  updateBoardOrder: (boardOrder: Record<Stage, string[]>) => void;
   getClientById: (id: string) => Client | undefined;
   getActionsByClientId: (clientId: string) => ActionItem[];
   getActionsForDate: (dateISO: string) => ActionItem[];
@@ -91,11 +102,39 @@ interface StoreContextValue extends StoreState {
 
 const StoreContext = createContext<StoreContextValue | undefined>(undefined);
 
+// Helper function to initialize board order from clients
+function initializeBoardOrder(clients: Client[]): Record<Stage, string[]> {
+  const order: Record<Stage, string[]> = {
+    'prospectos': [],
+    'contactados': [],
+    'visita-agendada': [],
+    'visitado': [],
+    'cotizacion-enviada': [],
+    'cerrado': [],
+    'seguimiento': [],
+  };
+
+  clients.forEach(client => {
+    order[client.stage].push(client.id);
+  });
+
+  return order;
+}
+
 // Provider
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(storeReducer, {
     clients: [],
     actions: [],
+    boardOrder: {
+      'prospectos': [],
+      'contactados': [],
+      'visita-agendada': [],
+      'visitado': [],
+      'cotizacion-enviada': [],
+      'cerrado': [],
+      'seguimiento': [],
+    },
     isHydrated: false,
   });
 
@@ -103,20 +142,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const clientsJSON = localStorage.getItem(STORAGE_KEYS.CLIENTS);
     const actionsJSON = localStorage.getItem(STORAGE_KEYS.ACTIONS);
+    const boardOrderJSON = localStorage.getItem(STORAGE_KEYS.BOARD_ORDER);
 
     if (clientsJSON && actionsJSON) {
       try {
         const clients = JSON.parse(clientsJSON);
         const actions = JSON.parse(actionsJSON);
-        dispatch({ type: 'HYDRATE', payload: { clients, actions } });
+
+        // Load or initialize board order
+        let boardOrder: Record<Stage, string[]>;
+        if (boardOrderJSON) {
+          boardOrder = JSON.parse(boardOrderJSON);
+        } else {
+          // Initialize from current clients
+          boardOrder = initializeBoardOrder(clients);
+        }
+
+        dispatch({ type: 'HYDRATE', payload: { clients, actions, boardOrder } });
       } catch (error) {
         console.error('Error parsing stored data:', error);
         // Fall back to seed data
-        dispatch({ type: 'HYDRATE', payload: { clients: seedClients, actions: seedActions } });
+        const boardOrder = initializeBoardOrder(seedClients);
+        dispatch({ type: 'HYDRATE', payload: { clients: seedClients, actions: seedActions, boardOrder } });
       }
     } else {
       // First load: use seed data
-      dispatch({ type: 'HYDRATE', payload: { clients: seedClients, actions: seedActions } });
+      const boardOrder = initializeBoardOrder(seedClients);
+      dispatch({ type: 'HYDRATE', payload: { clients: seedClients, actions: seedActions, boardOrder } });
     }
   }, []);
 
@@ -126,11 +178,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(state.clients));
         localStorage.setItem(STORAGE_KEYS.ACTIONS, JSON.stringify(state.actions));
+        localStorage.setItem(STORAGE_KEYS.BOARD_ORDER, JSON.stringify(state.boardOrder));
       } catch (error) {
         console.error('Error saving to localStorage:', error);
       }
     }
-  }, [state.clients, state.actions, state.isHydrated]);
+  }, [state.clients, state.actions, state.boardOrder, state.isHydrated]);
 
   // Actions
   const updateClient = (id: string, updates: Partial<Client>) => {
@@ -143,6 +196,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const toggleActionDone = (actionId: string) => {
     dispatch({ type: 'TOGGLE_ACTION_DONE', payload: actionId });
+  };
+
+  const updateBoardOrder = (boardOrder: Record<Stage, string[]>) => {
+    dispatch({ type: 'UPDATE_BOARD_ORDER', payload: boardOrder });
   };
 
   const getClientById = (id: string): Client | undefined => {
@@ -181,6 +238,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     updateClient,
     addAction,
     toggleActionDone,
+    updateBoardOrder,
     getClientById,
     getActionsByClientId,
     getActionsForDate,

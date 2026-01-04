@@ -1,16 +1,30 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Search, Filter } from 'lucide-react';
-import { STAGES, Stage, Potential } from '@/types';
+import { Search, Filter, AlertCircle } from 'lucide-react';
+import { STAGES, Stage, Potential, Client } from '@/types';
 import { useStore } from '@/lib/store';
 import KanbanColumn from './KanbanColumn';
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragOverEvent,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
+import KanbanCard from './KanbanCard';
 
 export default function KanbanBoard() {
-  const { clients } = useStore();
+  const { clients, boardOrder, updateClient, updateBoardOrder } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState<Stage | 'todos'>('todos');
   const [potentialFilter, setPotentialFilter] = useState<Potential | 'todos'>('todos');
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const filteredClients = useMemo(() => {
     return clients.filter((client) => {
@@ -39,6 +53,127 @@ export default function KanbanBoard() {
 
   const hasActiveFilters = searchTerm !== '' || stageFilter !== 'todos' || potentialFilter !== 'todos';
   const hasNoResults = filteredClients.length === 0 && hasActiveFilters;
+  const isDragDisabled = hasActiveFilters;
+
+  // Setup drag sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  // Get ordered clients for a stage
+  const getOrderedClients = (stage: Stage): Client[] => {
+    const stageOrder = boardOrder[stage] || [];
+    const stageClients = filteredClients.filter((client) => client.stage === stage);
+
+    // Sort clients according to boardOrder
+    const orderedClients = stageOrder
+      .map((id) => stageClients.find((c) => c.id === id))
+      .filter((c): c is Client => c !== undefined);
+
+    // Add any new clients not in the order yet
+    const newClients = stageClients.filter((c) => !stageOrder.includes(c.id));
+
+    return [...orderedClients, ...newClients];
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Find the active client
+    const activeClient = clients.find((c) => c.id === activeId);
+    if (!activeClient) return;
+
+    // Check if over is a container (stage) or an item (client)
+    const overStage = STAGES.find((s) => s.id === overId)?.id;
+    const overClient = clients.find((c) => c.id === overId);
+
+    if (overStage) {
+      // Moving to a different stage
+      if (activeClient.stage !== overStage) {
+        // Update client stage
+        updateClient(activeId, { stage: overStage });
+
+        // Update board order
+        const newBoardOrder = { ...boardOrder };
+
+        // Remove from old stage
+        newBoardOrder[activeClient.stage] = newBoardOrder[activeClient.stage].filter(
+          (id) => id !== activeId
+        );
+
+        // Add to new stage
+        if (!newBoardOrder[overStage].includes(activeId)) {
+          newBoardOrder[overStage] = [...newBoardOrder[overStage], activeId];
+        }
+
+        updateBoardOrder(newBoardOrder);
+      }
+    } else if (overClient && overClient.stage !== activeClient.stage) {
+      // Moving to a different stage (via another client)
+      const targetStage = overClient.stage;
+
+      // Update client stage
+      updateClient(activeId, { stage: targetStage });
+
+      // Update board order
+      const newBoardOrder = { ...boardOrder };
+
+      // Remove from old stage
+      newBoardOrder[activeClient.stage] = newBoardOrder[activeClient.stage].filter(
+        (id) => id !== activeId
+      );
+
+      // Add to new stage at the position of the over client
+      const targetIndex = newBoardOrder[targetStage].indexOf(overClient.id);
+      newBoardOrder[targetStage].splice(targetIndex, 0, activeId);
+
+      updateBoardOrder(newBoardOrder);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    const activeClient = clients.find((c) => c.id === activeId);
+    const overClient = clients.find((c) => c.id === overId);
+
+    // If both are clients in the same stage, reorder them
+    if (activeClient && overClient && activeClient.stage === overClient.stage) {
+      const stage = activeClient.stage;
+      const stageOrder = [...boardOrder[stage]];
+
+      const oldIndex = stageOrder.indexOf(activeId);
+      const newIndex = stageOrder.indexOf(overId);
+
+      if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+        const newOrder = arrayMove(stageOrder, oldIndex, newIndex);
+        updateBoardOrder({
+          ...boardOrder,
+          [stage]: newOrder,
+        });
+      }
+    }
+  };
+
+  const activeClient = activeId ? clients.find((c) => c.id === activeId) : null;
 
   return (
     <div>
@@ -95,6 +230,18 @@ export default function KanbanBoard() {
         </div>
       </div>
 
+      {/* Drag disabled notice */}
+      {isDragDisabled && (
+        <div className="bg-blue-50 border-b border-blue-200 px-8 py-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-blue-700" />
+            <p className="text-sm text-blue-700">
+              Arrastra y suelta deshabilitado mientras haya filtros activos
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Global Empty State for Filters */}
       {hasNoResults && (
         <div className="bg-yellow-50 border-b border-yellow-200 px-8 py-6">
@@ -113,24 +260,40 @@ export default function KanbanBoard() {
       )}
 
       {/* Kanban Board */}
-      <div className="p-8 overflow-x-auto">
-        <div className="flex gap-6">
-          {visibleStages.map((stage) => {
-            const stageClients = filteredClients.filter(
-              (client) => client.stage === stage.id
-            );
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="p-8 overflow-x-auto">
+          <div className="flex gap-6">
+            {visibleStages.map((stage) => {
+              const stageClients = getOrderedClients(stage.id);
 
-            return (
-              <KanbanColumn
-                key={stage.id}
-                title={stage.label}
-                color={stage.color}
-                clients={stageClients}
-              />
-            );
-          })}
+              return (
+                <KanbanColumn
+                  key={stage.id}
+                  stage={stage.id}
+                  title={stage.label}
+                  color={stage.color}
+                  clients={stageClients}
+                  isDragDisabled={isDragDisabled}
+                />
+              );
+            })}
+          </div>
         </div>
-      </div>
+
+        <DragOverlay>
+          {activeClient ? (
+            <div className="opacity-80 rotate-3">
+              <KanbanCard client={activeClient} />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }
