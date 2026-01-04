@@ -121,6 +121,14 @@ export default function KanbanBoard() {
       // Update board order
       const newBoardOrder = { ...boardOrder };
 
+      // Ensure source and target stage arrays exist
+      if (!newBoardOrder[sourceStage]) {
+        newBoardOrder[sourceStage] = [];
+      }
+      if (!newBoardOrder[overStage]) {
+        newBoardOrder[overStage] = [];
+      }
+
       // Remove from source stage
       newBoardOrder[sourceStage] = newBoardOrder[sourceStage].filter(
         (id) => id !== activeId
@@ -137,6 +145,11 @@ export default function KanbanBoard() {
 
     // Case 2: Reordering within the same stage
     if (overClient && sourceStage === overStage) {
+      // Ensure stage order array exists
+      if (!boardOrder[sourceStage]) {
+        return;
+      }
+
       const stageOrder = [...boardOrder[sourceStage]];
 
       const oldIndex = stageOrder.indexOf(activeId);
