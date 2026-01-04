@@ -236,7 +236,7 @@ export default function KanbanBoard() {
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-blue-700" />
             <p className="text-sm text-blue-700">
-              Arrastra y suelta deshabilitado mientras haya filtros activos
+              Para mover tarjetas, limpia los filtros.
             </p>
           </div>
         </div>
