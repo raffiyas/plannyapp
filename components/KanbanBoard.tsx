@@ -45,7 +45,7 @@ export default function KanbanBoard() {
 
       return true;
     });
-  }, [searchTerm, stageFilter, potentialFilter]);
+  }, [clients, searchTerm, stageFilter, potentialFilter]);
 
   const visibleStages = stageFilter === 'todos'
     ? STAGES
