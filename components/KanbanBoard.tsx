@@ -94,6 +94,7 @@ export default function KanbanBoard() {
 
     if (!over) return;
 
+    // Define all variables in the same scope
     const activeId = active.id as string;
     const overId = over.id as string;
 
@@ -103,21 +104,27 @@ export default function KanbanBoard() {
 
     const sourceStage = activeClient.stage;
 
+    // Find over client (if dropping over a card)
+    const overClient = clients.find((c) => c.id === overId);
+
     // Determine the target stage
     let overStage: Stage | undefined;
 
     // Check if dropping over a column
     if (over.data.current?.type === 'column') {
       overStage = over.data.current.stageId as Stage;
+    } else if (overClient) {
+      // Dropping over a client card
+      overStage = overClient.stage;
     } else {
-      // Check if overId is a stage container
-      const overStageId = STAGES.find((s) => s.id === overId)?.id;
-      // Check if overId is a client card
-      const overClient = clients.find((c) => c.id === overId);
-      // Determine the final overStage
-      overStage = overStageId || overClient?.stage;
+      // Check if overId matches a stage directly
+      const matchingStage = STAGES.find((s) => s.id === overId);
+      if (matchingStage) {
+        overStage = matchingStage.id;
+      }
     }
 
+    // Guard: must have valid stages
     if (!overStage) return;
 
     // Case 1: Moving between different stages
@@ -126,38 +133,44 @@ export default function KanbanBoard() {
       updateClient(activeId, { stage: overStage });
 
       // Update board order
-      const newBoardOrder = { ...boardOrder };
+      const sourceOrder = boardOrder[sourceStage] || [];
+      const destOrder = boardOrder[overStage] || [];
 
-      // Ensure source and target stage arrays exist
-      if (!newBoardOrder[sourceStage]) {
-        newBoardOrder[sourceStage] = [];
-      }
-      if (!newBoardOrder[overStage]) {
-        newBoardOrder[overStage] = [];
-      }
+      // Remove from source
+      const newSourceOrder = sourceOrder.filter((id) => id !== activeId);
 
-      // Remove from source stage
-      newBoardOrder[sourceStage] = newBoardOrder[sourceStage].filter(
-        (id) => id !== activeId
-      );
+      // Determine insert position in destination
+      let insertIndex = destOrder.length; // Default: end of list
 
-      // Add to target stage at the end
-      if (!newBoardOrder[overStage].includes(activeId)) {
-        newBoardOrder[overStage] = [...newBoardOrder[overStage], activeId];
+      if (overClient && overClient.stage === overStage) {
+        // Dropping over a card in the target column
+        const overIndex = destOrder.indexOf(overClient.id);
+        if (overIndex !== -1) {
+          insertIndex = overIndex;
+        }
       }
 
-      updateBoardOrder(newBoardOrder);
+      // Insert at the calculated position
+      const newDestOrder = [...destOrder];
+      if (!newDestOrder.includes(activeId)) {
+        newDestOrder.splice(insertIndex, 0, activeId);
+      }
+
+      // Update both stage orders
+      updateBoardOrder({
+        ...boardOrder,
+        [sourceStage]: newSourceOrder,
+        [overStage]: newDestOrder,
+      });
+
       return;
     }
 
     // Case 2: Reordering within the same stage
-    if (overClient && sourceStage === overStage) {
+    if (sourceStage === overStage && overClient) {
       // Ensure stage order array exists
-      if (!boardOrder[sourceStage]) {
-        return;
-      }
-
-      const stageOrder = [...boardOrder[sourceStage]];
+      const stageOrder = boardOrder[sourceStage] || [];
+      if (stageOrder.length === 0) return;
 
       const oldIndex = stageOrder.indexOf(activeId);
       const newIndex = stageOrder.indexOf(overId);
