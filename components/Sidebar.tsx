@@ -20,7 +20,7 @@ const navigation = [
   { name: 'Clientes', href: '/app/clientes', icon: Users, disabled: true },
   { name: 'Agenda', href: '/app/agenda', icon: Calendar, disabled: false },
   { name: 'Reportes', href: '/app/reportes', icon: BarChart3, disabled: true },
-  { name: 'Configuración', href: '/app/configuracion', icon: Settings, disabled: true },
+  { name: 'Configuración', href: '/app/configuracion', icon: Settings, disabled: false },
 ];
 
 export default function Sidebar() {

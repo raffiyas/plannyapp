@@ -27,8 +27,8 @@ export default function KanbanColumn({
 
         <div className="space-y-3">
           {clients.length === 0 ? (
-            <div className="text-center py-8 text-gray-400 text-sm">
-              Sin clientes
+            <div className="text-center py-8 px-4 text-gray-400 text-sm">
+              Sin clientes en este estado
             </div>
           ) : (
             clients.map((client) => (

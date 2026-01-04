@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { STAGES, Stage, Potential } from '@/types';
 import { useStore } from '@/lib/store';
 import KanbanColumn from './KanbanColumn';
@@ -36,6 +36,9 @@ export default function KanbanBoard() {
   const visibleStages = stageFilter === 'todos'
     ? STAGES
     : STAGES.filter(stage => stage.id === stageFilter);
+
+  const hasActiveFilters = searchTerm !== '' || stageFilter !== 'todos' || potentialFilter !== 'todos';
+  const hasNoResults = filteredClients.length === 0 && hasActiveFilters;
 
   return (
     <div>
@@ -91,6 +94,23 @@ export default function KanbanBoard() {
           </div>
         </div>
       </div>
+
+      {/* Global Empty State for Filters */}
+      {hasNoResults && (
+        <div className="bg-yellow-50 border-b border-yellow-200 px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-yellow-100 rounded-full">
+              <Filter className="w-5 h-5 text-yellow-700" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Sin resultados</h3>
+              <p className="text-sm text-gray-600">
+                No hay clientes que coincidan con estos filtros.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Kanban Board */}
       <div className="p-8 overflow-x-auto">

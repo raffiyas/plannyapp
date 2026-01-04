@@ -288,12 +288,13 @@ export default function ClientePage({ params }: ClientePageProps) {
                 <div className="flex items-start gap-3">
                   <button
                     onClick={() => toggleActionDone(action.id)}
-                    className="flex-shrink-0 mt-1"
+                    className="flex-shrink-0 mt-1 p-1 hover:bg-gray-100 rounded transition-colors"
+                    aria-label={action.done ? 'Marcar como pendiente' : 'Marcar como realizada'}
                   >
                     {action.done ? (
                       <CheckCircle2 className="w-5 h-5 text-green-600" />
                     ) : (
-                      <Circle className="w-5 h-5 text-gray-400" />
+                      <Circle className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                     )}
                   </button>
                   <div className="flex-1">
