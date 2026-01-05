@@ -31,13 +31,9 @@ export default function KanbanColumn({
 
   return (
     <div className="flex-shrink-0 w-80">
-      <div
-        ref={setNodeRef}
-        className={`bg-gray-50 rounded-lg p-4 h-full transition-colors ${
-          isOver && !isDragDisabled ? 'ring-2 ring-teal-400 bg-teal-50' : ''
-        }`}
-      >
-        <div className="flex items-center mb-4">
+      <div className="bg-gray-50 rounded-lg h-full flex flex-col">
+        {/* Header - fuera del área droppable */}
+        <div className="flex items-center p-4 pb-3">
           <div className={`w-3 h-3 rounded-full ${color} mr-2`} />
           <h3 className="font-semibold text-gray-900">
             {title}
@@ -47,27 +43,49 @@ export default function KanbanColumn({
           </span>
         </div>
 
-        <SortableContext
-          items={clientIds}
-          strategy={verticalListSortingStrategy}
-          disabled={isDragDisabled}
+        {/* Body droppable con min-height */}
+        <div
+          ref={setNodeRef}
+          className={`flex-1 p-4 pt-0 min-h-[260px] transition-colors ${
+            isOver && !isDragDisabled ? 'bg-teal-50' : ''
+          }`}
         >
-          <div className="space-y-3">
+          <SortableContext
+            items={clientIds}
+            strategy={verticalListSortingStrategy}
+            disabled={isDragDisabled}
+          >
             {clients.length === 0 ? (
-              <div className="text-center py-8 px-4 text-gray-400 text-sm">
-                Sin clientes en este estado
+              <div
+                className={`
+                  h-full min-h-[240px]
+                  flex items-center justify-center
+                  border-2 border-dashed rounded-lg
+                  transition-colors
+                  ${
+                    isOver && !isDragDisabled
+                      ? 'border-teal-400 bg-teal-100 text-teal-600'
+                      : 'border-gray-300 bg-white text-gray-400'
+                  }
+                `}
+              >
+                <span className="text-sm font-medium">
+                  {isOver && !isDragDisabled ? '⬇ Suelta aquí' : 'Suelta aquí'}
+                </span>
               </div>
             ) : (
-              clients.map((client) => (
-                <KanbanCard
-                  key={client.id}
-                  client={client}
-                  isDragDisabled={isDragDisabled}
-                />
-              ))
+              <div className="space-y-3">
+                {clients.map((client) => (
+                  <KanbanCard
+                    key={client.id}
+                    client={client}
+                    isDragDisabled={isDragDisabled}
+                  />
+                ))}
+              </div>
             )}
-          </div>
-        </SortableContext>
+          </SortableContext>
+        </div>
       </div>
     </div>
   );
