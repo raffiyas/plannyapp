@@ -19,7 +19,7 @@ export default function KanbanColumn({
   isDragDisabled = false,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
-    id: `column:${stage}`,
+    id: `column-${stage}`,
     data: {
       type: 'column',
       stageId: stage,
@@ -43,11 +43,11 @@ export default function KanbanColumn({
           </span>
         </div>
 
-        {/* Body droppable con min-height */}
+        {/* Body droppable con min-height aumentado y mejor feedback visual */}
         <div
           ref={setNodeRef}
-          className={`flex-1 p-4 pt-0 min-h-[260px] transition-colors ${
-            isOver && !isDragDisabled ? 'bg-teal-50' : ''
+          className={`flex-1 p-3 pt-0 min-h-[320px] rounded-xl transition-all duration-200 ${
+            isOver && !isDragDisabled ? 'bg-teal-50 ring-2 ring-teal-300 ring-inset' : ''
           }`}
         >
           <SortableContext
@@ -58,18 +58,18 @@ export default function KanbanColumn({
             {clients.length === 0 ? (
               <div
                 className={`
-                  h-full min-h-[240px]
+                  h-full min-h-[300px]
                   flex items-center justify-center
-                  border-2 border-dashed rounded-lg
-                  transition-colors
+                  border-2 border-dashed rounded-xl
+                  transition-all duration-200
                   ${
                     isOver && !isDragDisabled
-                      ? 'border-teal-400 bg-teal-100 text-teal-600'
+                      ? 'border-teal-400 bg-teal-50 text-teal-700 scale-[1.01]'
                       : 'border-gray-300 bg-white text-gray-400'
                   }
                 `}
               >
-                <span className="text-sm font-medium">
+                <span className="text-sm font-semibold">
                   {isOver && !isDragDisabled ? '⬇ Suelta aquí' : 'Suelta aquí'}
                 </span>
               </div>
