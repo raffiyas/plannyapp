@@ -9,18 +9,46 @@ import {
   DndContext,
   DragOverlay,
   closestCorners,
+  pointerWithin,
+  rectIntersection,
+  closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
   DragStartEvent,
   DragOverEvent,
   DragEndEvent,
+  CollisionDetection,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import KanbanCard from './KanbanCard';
 
 // Canonical list of all stages
 const ALL_STAGES: Stage[] = STAGES.map(s => s.id as Stage);
+
+/**
+ * Custom collision detection for better drag & drop UX.
+ * Uses a permissive fallback chain:
+ * 1. pointerWithin - detects if pointer is inside a droppable area
+ * 2. rectIntersection - detects if draggable overlaps with droppable
+ * 3. closestCenter - finds the nearest droppable by center point
+ */
+const customCollisionDetection: CollisionDetection = (args) => {
+  // Try pointer-based detection first (most precise)
+  const pointerCollisions = pointerWithin(args);
+  if (pointerCollisions.length > 0) {
+    return pointerCollisions;
+  }
+
+  // Fallback to rectangle intersection (good for large drop zones)
+  const intersectionCollisions = rectIntersection(args);
+  if (intersectionCollisions.length > 0) {
+    return intersectionCollisions;
+  }
+
+  // Final fallback to closest center (always finds something)
+  return closestCenter(args);
+};
 
 export default function KanbanBoard() {
   const { clients, boardOrder, updateClient, updateBoardOrder } = useStore();
@@ -58,11 +86,11 @@ export default function KanbanBoard() {
   const hasNoResults = filteredClients.length === 0 && hasActiveFilters;
   const isDragDisabled = hasActiveFilters;
 
-  // Setup drag sensors
+  // Setup drag sensors with reduced activation distance for better responsiveness
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 6,
       },
     })
   );
@@ -117,9 +145,9 @@ export default function KanbanBoard() {
     if (over.data.current?.type === 'column') {
       overStage = over.data.current.stageId as Stage;
     }
-    // Priority 2: Parse column: prefix
-    else if (overId.startsWith('column:')) {
-      overStage = overId.replace('column:', '') as Stage;
+    // Priority 2: Parse column- prefix
+    else if (overId.startsWith('column-')) {
+      overStage = overId.replace('column-', '') as Stage;
     }
     // Priority 3: Dropping over a client card
     else if (overClient) {
@@ -286,7 +314,7 @@ export default function KanbanBoard() {
       {/* Kanban Board */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={customCollisionDetection}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
